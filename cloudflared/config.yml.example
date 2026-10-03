@@ -4,6 +4,9 @@
 #   sudo cp cloudflared/config.yml.example /etc/cloudflared/config.yml  （并把 <TUNNEL-UUID> 换成真实值）
 #   sudo systemctl restart cloudflared-tunnel
 # 新增子域名还要执行：cloudflared tunnel route dns nuc xxx.hy-wu.com
+# protocol: http2 —— 强制走 TCP。校园网会掐断到边缘的 UDP 长连接（QUIC 全部
+# "timeout: no recent network activity"，隧道 1033），改 TCP 后稳定。
+protocol: http2
 tunnel: <TUNNEL-UUID>
 credentials-file: /etc/cloudflared/<TUNNEL-UUID>.json
 
