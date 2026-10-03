@@ -131,12 +131,16 @@ export function pageShell(meta: PageMeta, mainHtml: string): string {
   const dataJson = meta.data === undefined ? '{}' : JSON.stringify(meta.data)
     .replaceAll('<', '\\u003c')
   const descTag = meta.desc ? `\n<meta name="description" content="${esc(meta.desc)}">` : ''
+  // 页面含 KaTeX 渲染的公式时才引入其 CSS（字体按需加载，见 scripts/copy-static.ts）
+  const katexCss = mainHtml.includes('class="katex"')
+    ? '\n<link rel="stylesheet" href="/katex/katex.min.css">'
+    : ''
   return `<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">${descTag}
-<title>${esc(meta.title)}</title>
+<title>${esc(meta.title)}</title>${katexCss}
 <script>${THEME_INIT}</script>
 </head>
 <body>

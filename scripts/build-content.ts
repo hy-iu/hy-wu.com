@@ -5,9 +5,114 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, wri
 import { dirname, join } from 'node:path'
 import { marked } from 'marked'
 import matter from 'gray-matter'
+import katex from 'katex'
 import { csvToObjects, entryPath, esc, pageShell, ROOT } from './lib.ts'
 
 marked.setOptions({ gfm: true })
+
+// ---------- 数学公式（构建期 KaTeX 渲染，页面保持无 JS 可读） ----------
+// 流程：保护代码块 → 把公式抽成占位符 → marked 解析 → 占位符还原为 KaTeX HTML。
+// 支持：行内 $...$ 与 \(...\)，块级 $$...$$ 与 \[...\]（可跨行）。
+interface MathSpan {
+  tex: string
+  display: boolean
+}
+
+const MATH_MACROS: Record<string, string> = {
+  '\\dd': '\\mathrm{d}',
+  '\\ee': '\\mathrm{e}',
+  '\\ii': '\\mathrm{i}',
+  '\\R': '\\mathbb{R}',
+  '\\E': '\\mathbb{E}',
+  '\\lap': '\\nabla^2',
+  '\\grad': '\\nabla',
+  '\\div': '\\nabla\\cdot',
+  '\\pd': '\\partial',
+}
+
+/** 把 fenced 代码块与行内代码换成占位符，避免公式语法误伤代码；返回原文与占位符对照 */
+function protectCodeSegments(md: string): { text: string; codes: string[] } {
+  const codes: string[] = []
+  const stash = (raw: string) => {
+    codes.push(raw)
+    return `CODEPH${codes.length - 1}ENDPH`
+  }
+  const out: string[] = []
+  let buf: string[] = []
+  let inFence = false
+  let fenceMark = ''
+  for (const line of md.split('\n')) {
+    const m = line.match(/^\s{0,3}(`{3,}|~{3,})/)
+    if (!inFence && m) {
+      inFence = true
+      fenceMark = m[1][0]
+      buf = [line]
+      continue
+    }
+    if (inFence) {
+      buf.push(line)
+      if (m && m[1][0] === fenceMark) {
+        out.push(stash(buf.join('\n')))
+        inFence = false
+        buf = []
+      }
+      continue
+    }
+    out.push(line)
+  }
+  if (inFence) out.push(...buf.splice(0)) // 未闭合围栏：原样放回
+  let text = out.join('\n')
+  text = text.replace(/(`+)[\s\S]*?\1/g, (raw) => stash(raw))
+  return { text, codes }
+}
+
+/** 抽出公式为占位符；行内公式不跨行，纯数字内容（金额等）不当公式 */
+function extractMath(text: string): { text: string; spans: MathSpan[] } {
+  const spans: MathSpan[] = []
+  const stash = (tex: string, display: boolean) => {
+    spans.push({ tex: tex.trim(), display })
+    return `KATEXPH${spans.length - 1}ENDPH`
+  }
+  text = text.replace(/(?<!\\)\$\$([\s\S]+?)\$\$/g, (_, tex) => stash(tex, true))
+  text = text.replace(/\\\[([\s\S]+?)\\\]/g, (_, tex) => stash(tex, true))
+  text = text.replace(/(?<!\\)\$(?!\s)((?:\\[^\n]|[^\n$])+?)(?<![\s\\])\$(?!\d)/g, (whole, tex) => {
+    if (/^[\d.,\s%]+$/.test(tex.trim())) return whole
+    return stash(tex, false)
+  })
+  text = text.replace(/\\\(([\s\S]+?)\\\)/g, (_, tex) => stash(tex, false))
+  return { text, spans }
+}
+
+function katexHtml(spans: MathSpan[]): string[] {
+  return spans.map(({ tex, display }) => {
+    try {
+      return katex.renderToString(tex, {
+        displayMode: display,
+        throwOnError: false,
+        strict: false,
+        macros: MATH_MACROS,
+      })
+    } catch {
+      console.warn(`[katex] 渲染失败：${tex.slice(0, 60)}`)
+      return `<code>${esc(tex)}</code>`
+    }
+  })
+}
+
+function renderMd(md: string): string {
+  const { text: coded, codes } = protectCodeSegments(md)
+  const { text: pulled, spans } = extractMath(coded)
+  // 代码原样放回，交还给 marked 正常转义
+  const restored = pulled.replace(/CODEPH(\d+)ENDPH/g, (_, i) => codes[+i])
+  let html = marked.parse(restored, { async: false }) as string
+  const rendered = katexHtml(spans)
+  // 独占段落的块级公式替换整个 <p>，避免块级元素嵌进段落
+  html = html.replace(/<p>KATEXPH(\d+)ENDPH<\/p>/g, (_, i) =>
+    spans[+i].display ? `<div class="math-block">${rendered[+i]}</div>` : `<p>${rendered[+i]}</p>`,
+  )
+  html = html.replace(/KATEXPH(\d+)ENDPH/g, (_, i) => rendered[+i])
+  return html
+}
 
 interface Post {
   slug: string
@@ -66,12 +171,7 @@ function list(v: unknown): string[] {
   return Array.isArray(v) ? v.map((x) => String(x)) : []
 }
 
-// ---------- markdown 渲染 ----------
-function renderMd(md: string): string {
-  return marked.parse(md, { async: false })
-}
-
-/** 给渲染后的 HTML 里的 h2/h3 顺序编号并生成目录（wiki 式页内目录） */
+// ---------- 页内目录（wiki 式 h2/h3 编号） ----------
 function withToc(html: string): { html: string; toc: { level: number; text: string; id: string }[] } {
   const toc: { level: number; text: string; id: string }[] = []
   let i = 0
@@ -115,13 +215,15 @@ function buildBlog(): void {
   if (existsSync(dir)) {
     for (const f of readdirSync(dir).filter((f) => f.endsWith('.md')).sort()) {
       const { data, content } = frontmatterOf(join(dir, f))
+      const slug = f.replace(/\.md$/, '')
       posts.push({
-        slug: f.replace(/\.md$/, ''),
+        slug,
         title: str(data.title, f),
         date: str(data.date),
         tags: list(data.tags),
         author: str(data.author),
-        html: renderMd(content),
+        // 文章配图约定：](img/xxx) → /blog/img/<slug>/xxx（文件由 copy-static.ts 搬运）
+        html: renderMd(content.replaceAll('](img/', `](/blog/img/${slug}/`)),
       })
     }
   }

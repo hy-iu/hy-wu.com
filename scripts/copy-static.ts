@@ -29,4 +29,25 @@ if (existsSync(projectsDocsDir)) {
     copied += readdirSync(dest).length
   }
 }
-console.log(`static: ${copied} 个文件已拷入 dist/（调研图集 + 项目文档图）`)
+// 博客文章配图：content/posts/img/<slug>/ → dist/blog/img/<slug>
+const postsImgDir = join(ROOT, 'content', 'posts', 'img')
+if (existsSync(postsImgDir)) {
+  for (const slug of readdirSync(postsImgDir)) {
+    const dir = join(postsImgDir, slug)
+    if (!statSync(dir).isDirectory()) continue
+    const dest = join(ROOT, 'dist', 'blog', 'img', slug)
+    mkdirSync(dest, { recursive: true })
+    cpSync(dir, dest, { recursive: true })
+    copied += readdirSync(dest).length
+  }
+}
+// KaTeX 的 CSS 与字体（build-content.ts 构建期渲染公式后的静态依赖）
+const katexDist = join(ROOT, 'node_modules', 'katex', 'dist')
+if (existsSync(katexDist)) {
+  const dest = join(ROOT, 'dist', 'katex')
+  mkdirSync(dest, { recursive: true })
+  cpSync(join(katexDist, 'katex.min.css'), join(dest, 'katex.min.css'))
+  cpSync(join(katexDist, 'fonts'), join(dest, 'fonts'), { recursive: true })
+  copied += 1 + readdirSync(join(dest, 'fonts')).length
+}
+console.log(`static: ${copied} 个文件已拷入 dist/（调研图集 + 项目文档图 + 博客配图 + KaTeX）`)
