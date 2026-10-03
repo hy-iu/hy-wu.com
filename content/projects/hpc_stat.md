@@ -6,3 +6,5 @@ year: "2026"
 order: 3
 ---
 汇总比较各家算力硬件与大模型的关键参数、价格与性能数据，便于横向选型参考。
+
+![hpc_stat 运行截图](/projects/img/hpc_stat/screenshot.png)
