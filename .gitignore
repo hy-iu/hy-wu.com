@@ -7,9 +7,24 @@
 /cloudflared/config.yml
 # 隧道 UUID 本地缓存（供 setup-server.sh 读取）
 /tunnel-uuid.txt
+# 隐私本地配置：真名黑名单、GitHub 仓库归属等私密常量（示例见 privacy.local.example.json）
+/scripts/privacy.local.json
 
 # ===== 基础设施笔记（留在仓库外）=====
 /notes/
+# ZCode 会话产物（计划文件等，可能含工作过程细节）
+/.zcode/
+
+# ===== 前端工程 =====
+node_modules/
+dist/
+# build-content.ts 生成的页面壳（唯一源是 content/，入口枚举见 vite.config.ts）
+/blog/
+/research/
+/projects/
+/404.html
+# import-tnlm.ts 的克隆缓存
+/.tnlm-cache/
 
 # ===== 运行产物 / 杂物 =====
 *.log

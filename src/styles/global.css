@@ -1,0 +1,114 @@
+/* hy-wu.com — wiki/黄页式高密度风格，无装饰。
+   dark = 纯黑底，light = 纯浅灰底；切换由 <html data-theme> 控制。 */
+
+html[data-theme='light'] {
+  color-scheme: light;
+  --bg: #d9d9d9;
+  --fg: #111;
+  --mut: #444;
+  --link: #00c;
+  --vis: #551a8b;
+  --bd: #7a7a7a;
+  --bd-soft: #a8a8a8;
+  --thead: #c8c8c8;
+  --code-bg: rgba(0, 0, 0, 0.08);
+}
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #000;
+  --fg: #c8c8c8;
+  --mut: #999;
+  --link: #6cb2ff;
+  --vis: #b48cff;
+  --bd: #444;
+  --bd-soft: #2c2c2c;
+  --thead: #141414;
+  --code-bg: rgba(255, 255, 255, 0.1);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.45 Verdana, 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+
+.wrap { max-width: 74rem; margin: 0 auto; padding: 0 12px; }
+
+/* 密排：窄行距、窄段距 */
+h1 { font-size: 19px; margin: 0.6em 0 0.35em; }
+h2 { font-size: 16px; margin: 1.1em 0 0.3em; border-bottom: 1px solid var(--bd-soft); padding-bottom: 2px; }
+h3 { font-size: 14.5px; margin: 0.9em 0 0.25em; }
+p { margin: 0.3em 0; }
+ul, ol { margin: 0.3em 0; padding-left: 1.5em; }
+li { margin: 0.12em 0; }
+
+a { color: var(--link); }
+a:visited { color: var(--vis); }
+
+code { font-family: ui-monospace, 'SF Mono', Consolas, monospace; font-size: 12.5px; background: var(--code-bg); padding: 0 3px; }
+pre { overflow: auto; border: 1px solid var(--bd-soft); padding: 6px 8px; font-size: 12.5px; }
+pre code { background: none; padding: 0; }
+blockquote { border-left: 3px solid var(--bd-soft); margin: 0.5em 0; padding: 0.1em 0 0.1em 10px; color: var(--mut); }
+hr { border: 0; border-top: 1px solid var(--bd-soft); margin: 1.2em 0; }
+table { border-collapse: collapse; }
+img { max-width: 100%; }
+
+/* ---- 页头 / 页脚 ---- */
+.site-header { border-bottom: 1px solid var(--bd); }
+.header-row { display: flex; gap: 18px; align-items: baseline; padding: 7px 12px; }
+.site-title { font-weight: bold; color: var(--fg); text-decoration: none; }
+.site-nav { flex: 1; }
+.site-nav a { margin-right: 14px; }
+.theme-btn {
+  border: 1px solid var(--bd);
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  font-size: 12.5px;
+  padding: 0 7px;
+  cursor: pointer;
+}
+.site-footer { border-top: 1px solid var(--bd); margin-top: 2.2em; padding: 8px 0 18px; font-size: 12.5px; }
+.site-footer .credits { margin: 0.25em 0; }
+.fineprint { color: var(--mut); font-size: 12.5px; }
+
+/* ---- 目录表格（黄页主视觉） ---- */
+.page-desc { color: var(--mut); font-size: 13px; margin: 0.1em 0 0.5em; }
+.meta-line { color: var(--mut); font-size: 13px; margin: 0.15em 0 0.7em; }
+.dir-table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 0.4em 0 1em; }
+.dir-table th, .dir-table td { border: 1px solid var(--bd-soft); padding: 2px 7px; text-align: left; vertical-align: top; }
+.dir-table thead th { background: var(--thead); font-weight: bold; }
+.lit-table td:first-child { min-width: 22rem; }
+tr.hide { display: none; }
+
+/* ---- 过滤条 ---- */
+.filter-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
+.filter-bar input, .filter-bar select {
+  font: inherit; font-size: 13px;
+  background: var(--bg); color: var(--fg);
+  border: 1px solid var(--bd);
+  padding: 2px 7px;
+}
+.filter-bar input { min-width: 14rem; }
+.count { color: var(--mut); font-size: 12.5px; }
+
+/* ---- 项目 / 图集 ---- */
+.proj { border-top: 1px solid var(--bd-soft); padding: 0.45em 0 0.9em; }
+.proj h3 { margin: 0.35em 0 0.15em; }
+.proj .tag { display: inline-block; border: 1px solid var(--bd-soft); padding: 0 5px; margin: 1px 4px 1px 0; font-size: 12px; color: var(--mut); }
+figure { margin: 0.7em 0 1em; }
+figure img { border: 1px solid var(--bd-soft); }
+figcaption { font-size: 12.5px; color: var(--mut); margin-top: 2px; }
+
+/* ---- wiki 式页内目录 ---- */
+.toc { border: 1px solid var(--bd-soft); padding: 6px 12px 6px 4px; font-size: 13px; margin: 0.6em 0; display: inline-block; min-width: 18rem; }
+.toc strong { display: block; margin-left: 8px; }
+.toc ul { list-style: square; margin: 0.15em 0; }
+.toc a { text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+
+/* ---- 文章正文 ---- */
+.post-body h2 { margin-top: 1.3em; }

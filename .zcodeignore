@@ -1,0 +1,48 @@
+# ===== 凭据红线：永不提交 =====
+# 隧道管理证书、任何私钥
+*.pem
+# Cloudflare 隧道凭据 json（UUID 命名，真实文件只在 /etc/cloudflared/ 与 ~/.cloudflared/）
+/cloudflared/*.json
+# 真实隧道配置（含 UUID，只存在于服务器）
+/cloudflared/config.yml
+# 隧道 UUID 本地缓存（供 setup-server.sh 读取）
+/tunnel-uuid.txt
+
+# ===== 基础设施笔记（留在仓库外）=====
+/notes/
+
+# ===== 运行产物 / 杂物 =====
+*.log
+.DS_Store
+
+# ===== ↑ 以上同步自 .gitignore（「从 .gitignore 同步」只重写以上部分）=====
+.git/
+.hg/
+.svn/
+node_modules/
+bower_components/
+jspm_packages/
+__pycache__/
+site-packages/
+venv/
+coverage/
+htmlcov/
+lcov-report/
+cmakefiles/
+cmake-build-*/
+bazel-*/
+pods/
+deriveddata/
+storybook-static/
+playwright-report/
+test-results/
+allure-results/
+allure-report/
+cdk.out/
+*.egg-info/
+*.dist-info/
+eggs/
+pip-wheel-metadata/
+wheels/
+# ----- ↑ 以上为 ZCode 默认排除规则（自定义规则请写在本行下方，不会被同步/恢复改动）-----
+# 自定义规则写在下方（本行提示可删除）

@@ -1,0 +1,9 @@
+{
+  "deny": ["<真实姓名>", "<拼音ID>", "<GitHub用户名>", "<邮箱片段>"],
+  "githubRepos": {
+    "<项目名>": "<owner>/<repo>"
+  },
+  "import": {
+    "<子版块名>": "https://github.com/<owner>/<repo>"
+  }
+}

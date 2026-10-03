@@ -24,8 +24,14 @@ echo "== 2/4 安装 nginx 和 cloudflared =="
 DEBIAN_FRONTEND=noninteractive apt-get install -y nginx cloudflared
 
 echo "== 3/4 配置 nginx：仅监听 127.0.0.1:8080（公网摸不到）=="
+if ! command -v node >/dev/null 2>&1; then
+  echo "错误：需要 Node.js（≥20）来构建站点，请先安装 node/npm" >&2
+  exit 1
+fi
+npm ci --no-audit --no-fund
+npm run build
 mkdir -p /var/www/demo
-rsync -a --delete "$REPO/site/" /var/www/demo/
+rsync -a --delete "$REPO/dist/" /var/www/demo/
 cat > /etc/nginx/sites-available/demo <<'NGINX'
 server {
     listen 127.0.0.1:8080;
@@ -40,6 +46,10 @@ server {
     if ($request_method !~ ^(GET|HEAD)$) {
         return 405;
     }
+
+    # 自定义 404（黄页风）；对外直接请求 /404.html 也按 404 处理
+    error_page 404 /404.html;
+    location = /404.html { internal; }
 }
 NGINX
 ln -sf /etc/nginx/sites-available/demo /etc/nginx/sites-enabled/demo

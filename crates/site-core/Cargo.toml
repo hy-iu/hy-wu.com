@@ -1,0 +1,9 @@
+[package]
+name = "site-core"
+version = "0.1.0"
+edition = "2021"
+description = "hy-wu.com 站点纯逻辑工具箱（预留：未来编译为 wasm 供前端调用）"
+license = "MIT"
+
+[lib]
+crate-type = ["rlib"]

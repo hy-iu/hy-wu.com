@@ -1,0 +1,3 @@
+[workspace]
+members = ["crates/site-core"]
+resolver = "2"
