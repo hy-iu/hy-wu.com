@@ -1,0 +1,8 @@
+{
+  "$comment": "本机托管的应用清单。kind: project=项目页展示+在线链接 | research=调研板块条目 | 仅本机服务不进本清单（见 systemd/user/）。src=仓库内产物目录；build 在克隆目录里执行。仓库地址在 scripts/privacy.local.json 的 githubRepos，不入库。",
+  "tn-lm": { "kind": "research", "src": "app" },
+  "metro-dreams": { "kind": "project", "src": "app" },
+  "orderlevelredro": { "kind": "project", "src": "dist", "build": "npm ci --no-audit --no-fund && npm run build" },
+  "hpc_stat": { "kind": "project", "src": "dist", "build": "npm ci --no-audit --no-fund && npm run build" },
+  "space_explorer": { "kind": "project", "src": "dist", "build": "npm ci --no-audit --no-fund && npm run build" }
+}

@@ -1,0 +1,14 @@
+[Unit]
+Description=sciLC — 物理文献判题 WebUI（仅本机 127.0.0.1:8000，禁止公网暴露：judge 无沙箱执行提交代码）
+After=network-online.target
+
+[Service]
+WorkingDirectory=/home/w/apps/sciLC
+ExecStart=/usr/bin/python3 -m scilc.web --host 127.0.0.1 --port 8000
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=default.target

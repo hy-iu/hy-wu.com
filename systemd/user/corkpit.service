@@ -1,0 +1,15 @@
+[Unit]
+Description=corkpit — 多智能体控制面（仅本机 127.0.0.1:4177，禁止公网暴露）
+After=network-online.target
+
+[Service]
+WorkingDirectory=/home/w/apps/my_tools/corkpit
+ExecStart=/usr/bin/node dist/cli.js serve
+Restart=on-failure
+RestartSec=5
+# 只允许监听回环（服务自身默认绑 127.0.0.1，这里再加一层网络命名空间限制）
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=default.target

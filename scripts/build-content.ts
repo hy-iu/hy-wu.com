@@ -25,6 +25,7 @@ interface Project {
   year: string
   order: number
   authors: string[]
+  local: boolean
   html: string
 }
 interface Block {
@@ -164,9 +165,29 @@ ${p.html}
   console.log(`blog: ${posts.length} 篇文章 + 目录页`)
 }
 
+// ---------- 应用托管清单（apps/apps.json：本机托管的子路径应用） ----------
+function loadApps(): Record<string, { kind: string; src: string }> {
+  const p = join(ROOT, 'apps', 'apps.json')
+  if (!existsSync(p)) return {}
+  const raw = JSON.parse(readFileSync(p, 'utf8')) as Record<string, { kind: string; src: string }>
+  delete (raw as Record<string, unknown>)['$comment']
+  return raw
+}
+
+/** 项目页文档折叠区：渲染 docs/<slug>.md，图片重写到 /projects/img/<slug>/ */
+function renderProjectDocs(slug: string): string {
+  const docsFile = join(ROOT, 'content', 'projects', 'docs', `${slug}.md`)
+  if (!existsSync(docsFile)) return ''
+  const md = readFileSync(docsFile, 'utf8').replaceAll('](img/', `](/projects/img/${slug}/`)
+  const html = renderMd(md).trim()
+  if (!html) return ''
+  return `<details class="docs"><summary>文档 · README</summary>${html}</details>`
+}
+
 // ---------- 项目 ----------
 function buildProjects(authors: Authors): void {
   const dir = join(ROOT, 'content', 'projects')
+  const apps = loadApps()
   const projects: Project[] = []
   if (existsSync(dir)) {
     for (const f of readdirSync(dir).filter((f) => f.endsWith('.md')).sort()) {
@@ -180,6 +201,7 @@ function buildProjects(authors: Authors): void {
         year: str(data.year),
         order: typeof data.order === 'number' ? data.order : 99,
         authors: authors[name] ?? [],
+        local: data.local === true,
         html: renderMd(content),
       })
     }
@@ -194,13 +216,17 @@ function buildProjects(authors: Authors): void {
           : ''
       const stack = p.stack.map((s) => `<span class="tag">${esc(s)}</span>`).join('')
       const year = p.year ? `<span class="tag">${esc(p.year)}</span>` : ''
+      const localTag = p.local ? `<span class="tag">仅本机</span>` : ''
+      const online = apps[p.name] ? `<a class="online" href="/${esc(p.name)}/">在线 ↗</a>` : ''
       const body = p.html.trim() ? `<div class="proj-body">${p.html}</div>` : ''
+      const docs = renderProjectDocs(p.slug)
       return `<section class="proj">
-<h3>${esc(p.name)}</h3>
+<h3>${esc(p.name)}${online}</h3>
 <p>${esc(p.blurb)}</p>
-<div>${stack}${year}</div>
+<div>${stack}${year}${localTag}</div>
 ${authorLine}
 ${body}
+${docs}
 </section>`
     })
     .join('\n')
@@ -215,6 +241,7 @@ ${blocks}`
 // ---------- 调研 ----------
 function buildResearch(authors: Authors): void {
   const contentRoot = join(ROOT, 'content', 'research')
+  const apps = loadApps()
   const blocks: Block[] = []
   for (const slug of readDirNames(contentRoot)) {
     const metaFile = join(contentRoot, slug, 'block.md')
@@ -242,8 +269,11 @@ function buildResearch(authors: Authors): void {
       if (existsSync(join(contentRoot, b.slug, 'report.md'))) stats.push('报告 1 篇')
       const blockAuthors = authors[b.slug] ?? []
       const authorLine = blockAuthors.length ? `（作者：${blockAuthors.map(esc).join(' · ')}）` : ''
+      // 双入口：若该调研同时是本机托管应用（apps.json），原站为主入口
+      const original = apps[b.slug] ? `<a href="/${esc(b.slug)}/">原站 ↗</a> · ` : ''
       const links = [
-        `<a href="/research/${esc(b.slug)}/">报告</a>`,
+        original,
+        existsSync(join(contentRoot, b.slug, 'report.md')) ? `<a href="/research/${esc(b.slug)}/">报告</a>` : '',
         b.library ? `<a href="/research/${esc(b.slug)}/library/">文献库</a>` : '',
         b.figs ? `<a href="/research/${esc(b.slug)}/figs/">图集</a>` : '',
       ]

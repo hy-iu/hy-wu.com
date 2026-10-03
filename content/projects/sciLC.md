@@ -4,6 +4,7 @@ blurb: 物理文献 LeetCode 化 —— 约 100 道文献题卡 + 自动评测 j
 stack: [Python, FastAPI]
 year: "2026"
 order: 7
+local: true
 ---
 把"读物理文献/教材"变成 LeetCode 式的刷题体验：
 

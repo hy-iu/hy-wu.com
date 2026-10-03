@@ -13,26 +13,48 @@
 - **主题**：纯黑底 dark / 纯浅灰底 light，跟随系统 + 手动切换（localStorage 记忆）
 - **Rust 预留**：`crates/site-core/` 纯函数工具箱（`cargo test`），未来编译 wasm32 由前端调用，目前未接入构建
 
+## 本机应用托管（apps 子系统）
+
+项目原型直接挂在本站子路径下，不做内容转换（nginx 按路径分发，仍只有一条隧道 ingress）：
+
+- 在线托管：`/tn-lm/`、`/metro-dreams/`、`/orderlevelredro/`、`/hpc_stat/`、`/space_explorer/` —— 清单 `apps/apps.json`（仓库地址在 `privacy.local.json` 的 `githubRepos`，不入库）
+- **仅本机**（绝不公网暴露，见 `systemd/user/README.md`）：sciLC（judge 无沙箱执行提交代码）、corkpit（聚合本机 agent 会话）——只绑 127.0.0.1，自己用 SSH 隧道访问
+
+流程：
+
+```bash
+node scripts/app-deploy.ts --all   # 克隆/更新到 /home/w/apps/，构建，产物暂存 .apps-build/
+./deploy.sh                        # 主站 + 应用 + nginx 片段一并 rsync，nginx -t 后 reload
+```
+
+新增应用 = `apps/apps.json` 加一条 + `node scripts/gen-apps.ts` 重新生成 nginx 片段。
+
 ## 目录结构
 
 ```
 content/                      内容唯一源（改这里）
   posts/*.md                  博客文章（frontmatter: title/date/tags/author）
-  projects/*.md               项目条目（frontmatter: name/blurb/stack/year/order）
+  projects/*.md               项目条目（frontmatter: name/blurb/stack/year/order/local）
+  projects/docs/<slug>.md     项目 README 文档（fetch-app-docs.ts 抓取，已脱敏）
   research/<专题>/             调研子版块（block.md + report.md + bibliography.csv + figs/）
   authors.json                作者字段（npm run authors 生成，人工可审后提交）
+apps/apps.json                本机托管应用清单（子路径、构建命令、产物目录）
 scripts/
   build-content.ts            内容 → 预渲染 MPA 页面壳
+  app-deploy.ts               托管应用：克隆/构建/暂存（--all）
+  gen-apps.ts                 apps.json → nginx/apps-locations.conf
+  fetch-app-docs.ts           抓取项目 README + 截图（脱敏后入库）
   import-tnlm.ts              从公开仓库导入 tn-lm 调研（npm run import:tnlm）
   gen-authors.ts              git 日志提取工具名作者（npm run authors，双重过滤）
   check-privacy.ts            隐私红线检查（build 末步，命中即失败）
 src/                          React 组件、页面交互、全局样式
 crates/site-core/             Rust 预留位
-nginx/demo.conf               源站配置（仅监听 127.0.0.1:8080）
-cloudflared/config.yml.example  隧道路由模板（<TUNNEL-UUID> 占位）
+nginx/demo.conf               源站配置（仅监听 127.0.0.1:8080 + apps 子路径 include）
+systemd/user/                 仅本机服务单元（corkpit/sciLC）+ 说明
+cloudflared/config.yml.example  隧道路由模板（<TUNNEL-UUID> 占位，protocol: http2）
 systemd/cloudflared-tunnel.service  隧道服务单元（完整沙箱）
 setup-server.sh               从零重建服务器（幂等）
-deploy.sh                     构建 + 部署
+deploy.sh                     构建 + 部署（主站 + 托管应用 + nginx 片段）
 index.html                    根路径跳转页（手写，指向 /blog/）
 ```
 
