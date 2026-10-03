@@ -234,14 +234,14 @@ function buildBlog(): void {
     .map(
       (p) =>
         `<tr><td>${esc(p.date)}</td><td><a href="/blog/${esc(p.slug)}/">${esc(p.title)}</a></td><td>${esc(
-          p.tags.join(' · '),
-        )}</td></tr>`,
+          p.author,
+        )}</td><td>${esc(p.tags.join(' · '))}</td></tr>`,
     )
     .join('\n')
   const listMain = `<h1>博客</h1>
 <p class="page-desc">${posts.length} 篇</p>
 <div data-mount="filter" data-kind="rows" data-target="#post-rows"></div>
-<table class="dir-table"><thead><tr><th>日期</th><th>标题</th><th>标签</th></tr></thead>
+<table class="dir-table"><thead><tr><th>日期</th><th>标题</th><th>作者</th><th>标签</th></tr></thead>
 <tbody id="post-rows">
 ${rows}
 </tbody></table>`
