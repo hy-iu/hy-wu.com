@@ -1,0 +1,35 @@
+[Unit]
+Description=Cloudflare Tunnel (nuc -> www.hy-wu.com)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=cloudflared
+Group=cloudflared
+Type=simple
+ExecStart=/usr/bin/cloudflared --config /etc/cloudflared/config.yml tunnel run
+Restart=on-failure
+RestartSec=5
+# ---- 沙箱加固（系统管理器支持完整版）----
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictSUIDSGID=yes
+MemoryDenyWriteExecute=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

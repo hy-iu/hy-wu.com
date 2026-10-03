@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>NUC 隧道演示站</title>
+<style>body{font-family:system-ui,sans-serif;max-width:42rem;margin:4rem auto;line-height:1.8;color:#222}code{background:#f4f4f4;padding:.15em .4em;border-radius:4px}</style></head>
+<body>
+<h1>你好，来自一台 Ubuntu 24.04 的 Intel NUC 👋</h1>
+<p>页面由本机 <code>127.0.0.1:8080</code> 上的静态文件服务提供。</p>
+<h3>这条链路是怎么走的</h3>
+<p>浏览器 → Cloudflare 边缘节点（HTTPS 终结）→ <strong>出站</strong>隧道（cloudflared 主动向外连接）→ 本机回环地址。</p>
+<p>本机<strong>没有开放任何入站端口</strong>：家里/校园网没有公网入站也没关系，流量是 cloudflared 从内往外"拉"出来的。</p>
+</body></html>

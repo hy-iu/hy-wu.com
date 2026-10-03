@@ -1,0 +1,16 @@
+# ===== 凭据红线：永不提交 =====
+# 隧道管理证书、任何私钥
+*.pem
+# Cloudflare 隧道凭据 json（UUID 命名，真实文件只在 /etc/cloudflared/ 与 ~/.cloudflared/）
+/cloudflared/*.json
+# 真实隧道配置（含 UUID，只存在于服务器）
+/cloudflared/config.yml
+# 隧道 UUID 本地缓存（供 setup-server.sh 读取）
+/tunnel-uuid.txt
+
+# ===== 基础设施笔记（留在仓库外）=====
+/notes/
+
+# ===== 运行产物 / 杂物 =====
+*.log
+.DS_Store

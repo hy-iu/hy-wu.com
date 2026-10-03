@@ -1,0 +1,15 @@
+# Cloudflare Tunnel 配置模板（真实生效副本在服务器 /etc/cloudflared/config.yml）
+# setup-server.sh 会用本模板自动生成真实配置（<TUNNEL-UUID> 被替换）
+# 手动修改路由后：
+#   sudo cp cloudflared/config.yml.example /etc/cloudflared/config.yml  （并把 <TUNNEL-UUID> 换成真实值）
+#   sudo systemctl restart cloudflared-tunnel
+# 新增子域名还要执行：cloudflared tunnel route dns nuc xxx.hy-wu.com
+tunnel: <TUNNEL-UUID>
+credentials-file: /etc/cloudflared/<TUNNEL-UUID>.json
+
+ingress:
+  # 个人网站入口：www.hy-wu.com -> 本机 nginx
+  - hostname: www.hy-wu.com
+    service: http://127.0.0.1:8080
+  # 其余一律 404 兜底（绝不暴露未声明的本地服务）
+  - service: http_status:404
