@@ -11,8 +11,10 @@ tunnel: <TUNNEL-UUID>
 credentials-file: /etc/cloudflared/<TUNNEL-UUID>.json
 
 ingress:
-  # 个人网站入口：www.hy-wu.com -> 本机 nginx
+  # 个人网站入口：www 和裸域都指到本机 nginx（裸域在 nginx 层 301 到 www）
   - hostname: www.hy-wu.com
+    service: http://127.0.0.1:8080
+  - hostname: hy-wu.com
     service: http://127.0.0.1:8080
   # 其余一律 404 兜底（绝不暴露未声明的本地服务）
   - service: http_status:404

@@ -33,9 +33,10 @@ npm run build
 mkdir -p /var/www/demo
 rsync -a --delete "$REPO/dist/" /var/www/demo/
 cat > /etc/nginx/sites-available/demo <<'NGINX'
+# 主站：www（default_server —— 其他未声明 Host 也落到这里）
 server {
-    listen 127.0.0.1:8080;
-    server_name _;
+    listen 127.0.0.1:8080 default_server;
+    server_name www.hy-wu.com;
     root /var/www/demo;
     index index.html;
 
@@ -50,6 +51,16 @@ server {
     # 自定义 404（黄页风）；对外直接请求 /404.html 也按 404 处理
     error_page 404 /404.html;
     location = /404.html { internal; }
+
+    # 本机托管的应用子路径（/tn-lm/、/metro-dreams/ …），清单见 apps/apps.json
+    include /etc/nginx/snippets/hy-wu-apps.conf;
+}
+
+# 裸域：301 到 www（单一规范域名；边缘证书天然覆盖 hy-wu.com）
+server {
+    listen 127.0.0.1:8080;
+    server_name hy-wu.com;
+    return 301 https://www.hy-wu.com$request_uri;
 }
 NGINX
 ln -sf /etc/nginx/sites-available/demo /etc/nginx/sites-enabled/demo
